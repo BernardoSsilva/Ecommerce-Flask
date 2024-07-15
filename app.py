@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 app = Flask(
     __name__
 )
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///eccomerce.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///ecommerce.db"
 db = SQLAlchemy(app)
 
 class Product(db.Model):
