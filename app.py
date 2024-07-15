@@ -1,10 +1,10 @@
-from flask import Flask
+from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(
     __name__
 )
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///ecommerce.db"
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ecommerce.db'
 db = SQLAlchemy(app)
 
 class Product(db.Model):
@@ -15,11 +15,24 @@ class Product(db.Model):
      
     
 
-@app.route("/")
-def helloWorld(): 
-    print("listening")
+@app.route('/')
+def hello_world(): 
+    print('listening')
     
+    
+@app.route('/api/products/add', methods=['POST'])
+def add_new_product():
+    data = request.json
+    if(data['name'] and data['price']): 
+        product = Product(name = data['name'], price = data['price'], description = data.get('description', ''))
+        db.session.add(product)
+        db.session.commit()
+        jsonify({"code":200, "message":'successfully record'}) 
+    else:
+        jsonify({"code":400, "message":'invalid data'}) 
+
+
     
 
-if(__name__ == "__main__"):
+if(__name__ == '__main__'):
     app.run(debug=True)
