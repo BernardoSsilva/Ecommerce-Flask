@@ -4,9 +4,13 @@ from flask_sqlalchemy import SQLAlchemy
 app = Flask(
     __name__
 )
+
+#Conexão com banco sqlite
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ecommerce.db'
 db = SQLAlchemy(app)
 
+
+# Definição de entidade do banco de dados 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key = True) 
     name = db.Column(db.String(120), nullable=False)
@@ -15,35 +19,76 @@ class Product(db.Model):
      
     
 
+# Definição de rota inicial do aplicativo
 @app.route('/')
 def hello_world(): 
     print('listening')
     
     
+# Anotação para definir rota e métodos aceitos
 @app.route('/api/products/add', methods=['POST'])
 def add_new_product():
+    # Resgata dados do corpo de requisição
+    
     data = request.json
+    
+    # Checa se todos os dados obrigatórios foram enviados
     if(data['name'] and data['price']): 
-        product = Product(name = data['name'], price = data['price'], description = data.get('description', ''))
+        
+        # Criação de novo objeto para gravação no banco de dados
+        product = Product(
+            name = data['name'],
+            price = data['price'], 
+            # A função get permite que seja procurado o campo com o nome igual ao primeiro parâmetro e 
+            # define o segundo parâmetro como valor padrão
+            description = data.get('description', ''))
+        
+        # Adiciona o produto a sessão criada 
         db.session.add(product)
+        
+        # Salva dados criados durante a sessão
+        
         db.session.commit()
+        
+        # Retorna em formato json o dicionario que for oferecido como parâmetro
         return jsonify({"message":'successfully record'}) 
     else:
         return jsonify({"message":'invalid data'}), 400
 
+
+# Rota de deleção
+# Quando ha um parâmetro passado pela rota o mesmo deve ser passado como uma tag dentro da declaração
+# e como parâmetro dentro da função
 @app.route('/api/products/delete/<int:productId>', methods=['DELETE'])
 def delete_product(productId):
+    
+    # Resgata produto existente pelo id dentro da query
     product = Product.query.get(productId)
+    
+    # Checa existência do produto
     if(product):
+        # Delete a produto em sessão
         db.session.delete(product)
+        
+        # Salva as alterações
         db.session.commit()
         return ({"message":"Product deleted successfully"})
     return jsonify({"message":' product not found'}), 404
     
+
+# Busca de produto por id
 @app.route("/api/products/<int:productId>", methods=["GET"])
+# Quando ha um parâmetro passado pela rota o mesmo deve ser passado como uma tag dentro da declaração
+# e como parâmetro dentro da função
 def get_product(productId):
+    
+    # Recupera produto existente
     product = Product.query.get(productId)
+    
+    # Checa existência do produto
     if(product):
+        
+        # retorna em json a entidade
         return jsonify({
             "id": product.id,
             "name": product.name,
@@ -53,26 +98,37 @@ def get_product(productId):
     return jsonify({"message":'product not found'}), 404
 
 
+#Rota de atualização
 @app.route('/api/products/update/<int:productId>', methods=['PUT'])
+# Quando ha um parâmetro passado pela rota o mesmo deve ser passado como uma tag dentro da declaração
+# e como parâmetro dentro da função
 def updateProduct(productId):
     
 
+    # Recupera dados do corpo de requisição e produto existente
     data = request.json
     product = Product.query.get(productId)
+    
+    
+    # Checa se produto existe
     
     if not product:
         return jsonify({"message":'product not found'}), 404
  
+    # Checa se campo "name" foi enviado pelo corpo de requisição e altera
     if "name" in data:
         product.name = data["name"]
     
+    # Checa se campo "price" foi enviado pelo corpo de requisição e altera
     if "price" in data:
         product.price = data["price"]
-        
+    
+    # Checa se campo "description" foi enviado pelo corpo de requisição e altera    
     if "description" in data:
         product.description = data["description"]
         
     
+    # Salva as alterações
     db.session.commit()
         
     return jsonify({"message":"product update successfully" }),202
