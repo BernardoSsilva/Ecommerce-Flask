@@ -98,11 +98,29 @@ def get_product(productId):
     return jsonify({"message":'product not found'}), 404
 
 
+
+# Rota de seleção de lista de produtos 
+@app.route("/api/products", methods=["GET"])
+def list_products():
+    #Recupera todos os produtos do banco de dados
+    products = Product.query.all()
+    
+    # Cria um array para guardar todos os produtos
+    productsList = []
+    
+    # Realiza a iteração de cada produto colocando-o dentro da lista
+    for product in products:
+        productsList.append({"name":product.name, "price":product.price, "description":product.description, "id":product.id})
+        
+    # Retorna a lista
+    return jsonify({"products":productsList})
+    
+    
 #Rota de atualização
 @app.route('/api/products/update/<int:productId>', methods=['PUT'])
 # Quando ha um parâmetro passado pela rota o mesmo deve ser passado como uma tag dentro da declaração
 # e como parâmetro dentro da função
-def updateProduct(productId):
+def update_product(productId):
     
 
     # Recupera dados do corpo de requisição e produto existente
