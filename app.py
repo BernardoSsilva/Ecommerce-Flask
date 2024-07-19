@@ -57,6 +57,34 @@ def register_new_user():
     return jsonify({"message": "Error on create user"}), 400
 
 
+
+# Rota de login
+@app.route("/api/users/login", methods=["POST"])
+def authenticate_user():
+    
+    # Recebe dados do corpo de requisição
+    data = request.json
+    
+    # Checa se todos os dados foram enviados
+    if(data["username"] and data["password"]):
+        
+        # Procura usuário pelo "username"
+        user = User.query.filter_by(username = data["username"]).first()
+        
+        # Checa se algum usuário foi encontrado
+        
+        if user == None:
+            return jsonify({"message": "User not find"}), 404
+            
+            
+        # Checa se as senhas coincidem
+        if user.password == data["password"]:
+            return jsonify({"message": "Logged successfully"})
+        return jsonify({"message": "Unauthorized"}), 401
+    
+    return jsonify({"message": "Invalid data"}), 400
+
+
 # * Rotas de produtos 
 # Anotação para definir rota e métodos aceitos
 @app.route('/api/products/add', methods=['POST'])
