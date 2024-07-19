@@ -1,9 +1,14 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
+
 
 app = Flask(
     __name__
 )
+
+# adicionado o cors para permitir que o aplicativo seja acessível pelo swagger e outras aplicações externas
+CORS(app)
 
 #Conexão com banco sqlite
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ecommerce.db'
