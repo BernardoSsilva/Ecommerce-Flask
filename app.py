@@ -1,6 +1,8 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
+from flask_login import UserMixin
+import uuid
 
 
 app = Flask(
@@ -15,21 +17,47 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ecommerce.db'
 db = SQLAlchemy(app)
 
 
-# Definição de entidade do banco de dados 
+# Definição de entidade de usuário no banco de dados
+class User(db.Model, UserMixin):
+    id = db.Column(db.String(36), default=lambda: str(uuid.uuid4()), unique=True, primary_key=True)
+    username = db.Column(db.String(100), nullable=False, unique=True)
+    password = db.Column(db.String(100), nullable=False)
+    
+# Definição de entidade de produtos no banco de dados 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key = True) 
     name = db.Column(db.String(120), nullable=False)
     price = db.Column(db.Float,nullable=False)
     description = db.Column(db.Text, nullable=True)
-     
     
-
 # Definição de rota inicial do aplicativo
 @app.route('/')
 def hello_world(): 
     print('listening')
-    
-    
+
+# * Rotas de usuários        
+@app.route("/api/users/create", methods=["POST"])
+def register_new_user():
+    data = request.json
+    if(data["username"] and data["password"]):
+        
+        # criando usuário
+        user = User(
+            username = data["username"],
+            password = data["password"]
+        )
+        
+        print(user)
+        # Adicionando usuário na sessão
+        db.session.add(user)
+        
+        # Salvar usuário no banco 
+        db.session.commit()
+        return jsonify({"message":"user successfully created"})
+    return jsonify({"message": "Error on create user"}), 400
+
+
+# * Rotas de produtos 
 # Anotação para definir rota e métodos aceitos
 @app.route('/api/products/add', methods=['POST'])
 def add_new_product():
