@@ -44,7 +44,6 @@ def delete_product(productId):
 def get_product(productId):
     product = Product.query.get(productId)
     if(product):
-        
         return jsonify({
             "id": product.id,
             "name": product.name,
@@ -52,6 +51,32 @@ def get_product(productId):
             "description": product.description
         })
     return jsonify({"message":'product not found'}), 404
+
+
+@app.route('/api/products/update/<int:productId>', methods=['PUT'])
+def updateProduct(productId):
     
+
+    data = request.json
+    product = Product.query.get(productId)
+    
+    if not product:
+        return jsonify({"message":'product not found'}), 404
+ 
+    if "name" in data:
+        product.name = data["name"]
+    
+    if "price" in data:
+        product.price = data["price"]
+        
+    if "description" in data:
+        product.description = data["description"]
+        
+    
+    db.session.commit()
+        
+    return jsonify({"message":"product update successfully" }),202
+
+
 if(__name__ == '__main__'):
     app.run(debug=True)
