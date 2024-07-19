@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-from flask_login import UserMixin
+from flask_login import UserMixin, login_user, LoginManager
 import uuid
 
 
@@ -12,9 +12,16 @@ app = Flask(
 # adicionado o cors para permitir que o aplicativo seja acessível pelo swagger e outras aplicações externas
 CORS(app)
 
+
+loginManager = LoginManager();
+
 #Conexão com banco sqlite
+app.config["SECRET_KEY"] = "123"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ecommerce.db'
 db = SQLAlchemy(app)
+
+loginManager.init_app(app)
+loginManager.login_view = "login"
 
 
 # Definição de entidade de usuário no banco de dados
@@ -59,7 +66,7 @@ def register_new_user():
 
 
 # Rota de login
-@app.route("/api/users/login", methods=["POST"])
+@app.route("/login", methods=["POST"])
 def authenticate_user():
     
     # Recebe dados do corpo de requisição
