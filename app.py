@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-from flask_login import UserMixin, login_user, LoginManager
+from flask_login import UserMixin, login_user, LoginManager, login_required
 import uuid
 
 
@@ -16,7 +16,7 @@ CORS(app)
 loginManager = LoginManager();
 
 #Conexão com banco sqlite
-app.config["SECRET_KEY"] = "123"
+app.config["SECRET_KEY"] = "35a20c19-ae84-4344-82a0-af22cb451a7b"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ecommerce.db'
 db = SQLAlchemy(app)
 
@@ -66,15 +66,21 @@ def register_new_user():
 
 
 # Rota de login
+@loginManager.user_loader
+def load_user(user_id):
+    return User.query.get(str(user_id))
+
+
 @app.route("/login", methods=["POST"])
 def authenticate_user():
     
     # Recebe dados do corpo de requisição
     data = request.json
+
+        
     
     # Checa se todos os dados foram enviados
     if(data["username"] and data["password"]):
-        
         # Procura usuário pelo "username"
         user = User.query.filter_by(username = data["username"]).first()
         
@@ -86,6 +92,7 @@ def authenticate_user():
             
         # Checa se as senhas coincidem
         if user.password == data["password"]:
+            login_user(user)
             return jsonify({"message": "Logged successfully"})
         return jsonify({"message": "Unauthorized"}), 401
     
@@ -95,6 +102,8 @@ def authenticate_user():
 # * Rotas de produtos 
 # Anotação para definir rota e métodos aceitos
 @app.route('/api/products/add', methods=['POST'])
+@login_required
+
 def add_new_product():
     # Resgata dados do corpo de requisição
     
@@ -128,6 +137,8 @@ def add_new_product():
 # Quando ha um parâmetro passado pela rota o mesmo deve ser passado como uma tag dentro da declaração
 # e como parâmetro dentro da função
 @app.route('/api/products/delete/<int:productId>', methods=['DELETE'])
+@login_required
+
 def delete_product(productId):
     
     # Resgata produto existente pelo id dentro da query
@@ -186,6 +197,7 @@ def list_products():
     
 #Rota de atualização
 @app.route('/api/products/update/<int:productId>', methods=['PUT'])
+@login_required
 # Quando ha um parâmetro passado pela rota o mesmo deve ser passado como uma tag dentro da declaração
 # e como parâmetro dentro da função
 def update_product(productId):
