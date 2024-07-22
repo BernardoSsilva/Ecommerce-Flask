@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-from flask_login import UserMixin, login_user, LoginManager, login_required
+from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user
 import uuid
 
 
@@ -99,11 +99,17 @@ def authenticate_user():
     return jsonify({"message": "Invalid data"}), 400
 
 
+#Rota de logout
+@app.route("/logout", methods=["POST"])
+@login_required
+def logout():
+    logout_user()
+    return jsonify({"message": "Logout successfully"})
+
 # * Rotas de produtos 
 # Anotação para definir rota e métodos aceitos
 @app.route('/api/products/add', methods=['POST'])
 @login_required
-
 def add_new_product():
     # Resgata dados do corpo de requisição
     
@@ -138,7 +144,6 @@ def add_new_product():
 # e como parâmetro dentro da função
 @app.route('/api/products/delete/<int:productId>', methods=['DELETE'])
 @login_required
-
 def delete_product(productId):
     
     # Resgata produto existente pelo id dentro da query
