@@ -29,6 +29,7 @@ class User(db.Model, UserMixin):
     id = db.Column(db.String(36), default=lambda: str(uuid.uuid4()), unique=True, primary_key=True)
     username = db.Column(db.String(100), nullable=False, unique=True)
     password = db.Column(db.String(100), nullable=False)
+    cart = db.relationship("CartItem", backref="user", lazy=True)
     
 # Definição de entidade de produtos no banco de dados 
 class Product(db.Model):
@@ -37,6 +38,12 @@ class Product(db.Model):
     price = db.Column(db.Float,nullable=False)
     description = db.Column(db.Text, nullable=True)
     
+    
+class CartItem(db.Model):
+    id = db.Column(db.String(36), default=lambda: str(uuid.uuid4()), unique=True, primary_key=True)
+    userId = db.Column(db.String(36) , db.ForeignKey("user.id"), nullable=False)
+    productId = db.Column(db.Integer, db.ForeignKey("product.id"), nullable=False)
+
 # Definição de rota inicial do aplicativo
 @app.route('/')
 def hello_world(): 
@@ -235,6 +242,10 @@ def update_product(productId):
     db.session.commit()
         
     return jsonify({"message":"product update successfully" }),202
+
+
+
+# * Checkout routes
 
 
 if(__name__ == '__main__'):
