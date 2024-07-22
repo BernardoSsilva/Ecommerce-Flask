@@ -263,6 +263,19 @@ def add_item_to_cart(productId):
     return jsonify({"message":"Item added to cart successfully" })
     
 
+# rota para recuperar todos os itens do carrinho
+@app.route("/api/cart/remove/<int:productId>", methods=["DELETE"])
+@login_required
+def remove_item_from_card(productId):
+    cartItem = CartItem.query.filter_by(userId= current_user.id, productId=int(productId)).first()
+    if not cartItem:
+        return jsonify({"message":"item not found"}),404
+        
+    db.session.delete(cartItem)
+    db.session.commit()
+    return jsonify({"message":"item deleted successfully"})
+ 
+
 
 if(__name__ == '__main__'):
     app.run(debug=True)
